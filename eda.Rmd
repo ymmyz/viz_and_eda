@@ -1,0 +1,97 @@
+---
+title: "Exploratory Analysis"
+author: "ymmyz"
+date: "10/3/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+library(ggthemes)
+```
+
+```{r data_import, cache = TRUE}
+library(rnoaa)
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2016-01-01",
+                      date_max = "2016-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10,
+    month = lubridate::floor_date(date, unit = "month")) %>%  # lubridate is the package that specifies in date calculation and manipulation
+  select(name, id, date, month, everything())
+```
+
+## Start Grouping
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(number = n())  # Compute the number of previous groups
+
+weather_df %>% 
+  group_by(name) %>% 
+  summarize(number = n())
+
+weather_df %>% 
+  count(month)  # Count without group
+```
+
+## Group Summaries
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(number = n(),
+             num_na = sum(is.na(tmax)),  # See if the value is NA
+            mean_tmax = mean(tmax, na.rm = TRUE), # Calculate the mean of month groups and remove na
+            median_prcp = median(prcp, na.rm = TRUE))   # calculate median and remove na
+
+
+```
+
+Offtidy
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE)) %>% 
+  spread(key = month, value = mean_tmax)
+```
+
+## Grouped mutate
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE))
+```
+
+```{r}
+weather_df %>% 
+  group_by(name) %>% 
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE),
+         centred_tmax = tmax - mean_tmax) %>% 
+  ggplot(aes(x = date, y = centred_tmax, color = name)) +
+  geom_point()
+```
+
+## Window functions
+
+Use Ranks
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  mutate(tmax_rank = min_rank(desc(tmax))) %>%   # Use rank
+  filter(tmax_rank < 2)
+```
+

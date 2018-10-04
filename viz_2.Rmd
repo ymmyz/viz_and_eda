@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggridges)
+library(patchwork)
+library(ggthemes)
 ```
 
 ```{r data_import, cache = TRUE}
@@ -29,123 +31,205 @@ weather_df =
 weather_df
 ```
 
-## Start a plot
-
-Blank plot
+Scatter plot
 
 ```{r}
-ggplot(weather_df, aes(x = tmin, y = tmax))
+ggplot(weather_df, aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name), alpha = 0.5)
 ```
 
-Scatterplot
+## Add lables and ticks
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name), alpha = 0.5) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maximum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  )
+```
+
+use scale to control the location of ticks
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name), alpha = 0.5) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maximum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) +
+  scale_x_continuous(breaks = c(-15, 0, 15),
+                      labels = c("-15º C", "0", "15"))
+```
+
+## Change colors and themes
 
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point()
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  scale_color_hue(name = "Location",
+                  h = c(100, 300))
 ```
 
-Only with data with CentralPark_NY
-
-```{r}
-weather_df %>% 
-  filter(name == "CentralPark_NY") %>% 
-  ggplot(aes(x = tmin, y = tmax)) +
-  geom_point()
-```
-
-create and save a plot
-
-```{r}
-weather_sp = 
-  ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point()
-```
-
-## More plot options
-
-Add an aesthetic
+use viridis package to change color
 
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point(aes(color = name))
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE    # this is because the variable "Location" is discrete 
+  )
 ```
 
-Add a geom
+change legend location
 
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point(aes(color = name)) + 
-  geom_smooth(se = FALSE)
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme(legend.position = "bottom") # move the legend to the bottom of the plot
 ```
 
-Add some options
+## Apply themes
+
+theme_bw ... 
 
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point(aes(color = name), alpha = 0.4) + 
-  geom_smooth(se = FALSE)
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_bw() +
+  theme(legend.position = "bottom")
 ```
 
+theme_classic
+
 ```{r}
-ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) +   # here, color = name applies for all the geom down there
-  geom_point(alpha = 0.4) + 
-  geom_smooth(se = FALSE)
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_classic()+
+  theme(legend.position = "bottom")
 ```
 
-Facetting ...
+the excel 2003 theme from ggthemes
 
 ```{r}
-ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
-  geom_point(alpha = 0.4) + 
-  geom_smooth(se = FALSE) +
-  facet_grid( ~ name)   # Create seperate plots according to the name variable
-```
-
-
-A more interesting plot
-
-```{r}
-ggplot(weather_df, aes(x = date, y = tmax, color = name, size = prcp)) +
-  geom_point() +
-  geom_smooth(se = FALSE) +
-  facet_grid( ~ name)
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  ggthemes::theme_excel() +
+  theme(legend.position = "bottom")
 ```
 
 ## Learning Assessment
 
 ```{r}
-ggplot(weather_df) + geom_point(aes(x = tmax, y = tmin), color = "blue")
-ggplot(weather_df) + geom_point(aes(x = tmax, y = tmin, color = "blue")) # Try to find a variable called blue, but cannot find one, so ggplot just create "blue" everywhere and color geom according to it
+ggplot(weather_df, aes(x = date, y = tmax)) +
+  geom_point(aes(color = name), alpha = 0.5) +
+  labs(
+    title = "Temperature changing over time",
+    x = "Date",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) +
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE
+  ) +
+  theme_classic()+
+  theme(legend.position = "bottom")
 ```
 
-## Univariate plots
-
-Histograms
+## Data argument in geom_*
 
 ```{r}
-ggplot(weather_df, aes(x = tmax)) +
-  geom_histogram() # Shows the distribution of tmax
+central_park =
+  weather_df %>% 
+  filter(name == "CentralPark_NY")
+
+waikiki =
+  weather_df %>% 
+  filter(name == "Waikiki_HA")
+
+ggplot(waikiki, aes(x = date, y = tmax, color = name)) +
+  geom_point() +
+  geom_line(data = central_park)
 ```
+
+## Use patchwork to combine several plots
 
 ```{r}
-ggplot(weather_df, aes(x = tmax, fill = name)) +
-  geom_histogram()
+tmax_tmin_p = ggplot(weather_df, aes(x = tmax, y = tmin, color = name)) + 
+  geom_point(alpha = .5) +
+  theme(legend.position = "none")
+
+prcp_dens_p = weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+tmax_date_p = ggplot(weather_df, aes(x = date, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom")
+
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
 ```
 
-```{r}
-ggplot(weather_df, aes(x = tmax, fill = name)) + #fill is a kind of color, fill everything under the curve
-  geom_density(alpha = 0.4)
-```
 
-Boxplots 
-
-```{r}
-ggplot(weather_df, aes(x = name, y = tmax)) +
-  geom_violin()
-```
-
-```{r}
-ggplot(weather_df, aes(x = tmax, y = name)) +
-  geom_density_ridges()
-```
 
